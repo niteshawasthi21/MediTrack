@@ -1,12 +1,15 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { lazy, Suspense } from "react";
 
 import Login from "../pages/Login";
-import Dashboard from "../pages/Dashboard";
-import Patients from "../pages/Patients";
-import Analytics from "../pages/Analytics";
+const Dashboard = lazy(() => import("../pages/Dashboard"));
+const Patients = lazy(() => import("../pages/Patients"));
+const Analytics = lazy(() => import("../pages/Analytics"));
 
 import ProtectedRoute from "./ProtectedRoute";
 import NotFound from "../pages/NotFound";
+
+const LoadingFallback = () => <div className="flex items-center justify-center h-screen">Loading...</div>;
 
 export default function AppRoutes() {
   return (
@@ -18,7 +21,9 @@ export default function AppRoutes() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <Suspense fallback={<LoadingFallback />}>
+                <Dashboard />
+              </Suspense>
             </ProtectedRoute>
           }
         />
@@ -26,7 +31,9 @@ export default function AppRoutes() {
           path="/patients"
           element={
             <ProtectedRoute>
-              <Patients />
+              <Suspense fallback={<LoadingFallback />}>
+                <Patients />
+              </Suspense>
             </ProtectedRoute>
           }
         />
@@ -34,7 +41,9 @@ export default function AppRoutes() {
           path="/analytics"
           element={
             <ProtectedRoute>
-              <Analytics />
+              <Suspense fallback={<LoadingFallback />}>
+                <Analytics />
+              </Suspense>
             </ProtectedRoute>
           }
         />
