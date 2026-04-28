@@ -8,15 +8,22 @@ const Analytics = lazy(() => import("../pages/Analytics"));
 
 import ProtectedRoute from "./ProtectedRoute";
 import NotFound from "../pages/NotFound";
+import LandingPage from "../pages/LandingPage";
+ 
 
-const LoadingFallback = () => <div className="flex items-center justify-center h-screen">Loading...</div>;
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center h-screen">Loading...</div>
+);
 
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
+        {/* Public routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
 
+        {/* Protected routes */}
         <Route
           path="/dashboard"
           element={

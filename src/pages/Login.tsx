@@ -48,7 +48,6 @@ function getAuthMessage(err: unknown) {
 
 export default function Login() {
   const { user, login, signup, loginWithGoogle, error, loading } = useAuth();
-
   const navigate = useNavigate();
 
   const [isSignUp, setIsSignUp] = useState(false);
@@ -118,7 +117,7 @@ export default function Login() {
         }, 800);
       } else {
         await login(email, password);
-        // ❌ no navigate here (handled by useEffect)
+        // ❌ navigate handled by useEffect
       }
     } catch (err) {
       setLocalError(getAuthMessage(err));
@@ -146,155 +145,178 @@ export default function Login() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-950 via-blue-800 to-cyan-500 px-4 py-8 sm:px-6">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-950 via-blue-800 to-cyan-500 px-4 sm:px-6">
       {/* Background blobs */}
-      <div className="absolute -right-40 -top-40 h-[420px] w-[420px] rounded-full bg-white/5 blur-3xl" />
-      <div className="absolute -bottom-32 -left-24 h-[320px] w-[320px] rounded-full bg-white/5 blur-2xl" />
+      <div className="absolute -right-40 -top-40 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
+      <div className="absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-white/5 blur-2xl" />
 
-      <div className="relative z-10 flex min-h-[calc(100vh-4rem)] items-center justify-center">
-        <div className="mx-auto w-full max-w-md">
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 shadow-lg backdrop-blur-md">
-                <LocalHospital className="text-white !text-3xl" />
+      <div className="relative z-10 flex min-h-screen items-center justify-center">
+        <div className="w-full max-w-md rounded-3xl">
+          {/* Card */}
+          <Card className="!rounded-3xl !shadow-2xl !border-0 overflow-hidden">
+            {/* Brand header inside card */}
+            <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-600 text-white py-6 px-8 flex items-center gap-3">
+              <div className="-ml-1 flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 shadow-md">
+                <LocalHospital className="!text-2xl text-white" />
               </div>
 
-              <h1 className="text-3xl font-bold text-white">CarePulse</h1>
-              <p className="mt-2 text-sm text-white/75">
-                Secure B2B healthcare platform
-              </p>
+              <div>
+                <Typography
+                  variant="h5"
+                  className="!font-bold"
+                  sx={{ color: "white" }}
+                >
+                  CarePulse
+                </Typography>
+                <Typography variant="body2" className="!text-white/75">
+                  Secure B2B healthcare platform
+                </Typography>
+              </div>
             </div>
 
-            {/* Card */}
-            <Card className="!rounded-3xl !shadow-2xl">
-              <CardContent className="!p-6 sm:!p-8">
-                <Stack spacing={3}>
-                  {/* Title */}
-                  <div>
-                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                      {isSignUp ? "Create Account" : "Welcome back"}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {isSignUp
-                        ? "Create your account to continue"
-                        : "Sign in to access your dashboard"}
-                    </Typography>
-                  </div>
-
-                  {/* Alerts */}
-                  {localError && <Alert severity="error">{localError}</Alert>}
-                  {successMessage && (
-                    <Alert severity="success">{successMessage}</Alert>
-                  )}
-
-                  {/* Form */}
-                  <form onSubmit={handleSubmit}>
-                    <Stack spacing={2}>
-                      <TextField
-                        fullWidth
-                        label="Email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={loading}
-                      />
-
-                      <TextField
-                        fullWidth
-                        label="Password"
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={loading}
-                        autoComplete={
-                          isSignUp ? "new-password" : "current-password"
-                        }
-                        slotProps={{
-                          input: {
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <IconButton
-                                  type="button"
-                                  onClick={() => setShowPassword((p) => !p)}
-                                  edge="end"
-                                  aria-label={
-                                    showPassword
-                                      ? "Hide password"
-                                      : "Show password"
-                                  }
-                                >
-                                  {showPassword ? (
-                                    <VisibilityOff />
-                                  ) : (
-                                    <Visibility />
-                                  )}
-                                </IconButton>
-                              </InputAdornment>
-                            ),
-                          },
-                        }}
-                      />
-
-                      <Button
-                        type="submit"
-                        fullWidth
-                        variant="contained"
-                        disabled={loading}
-                        className="!rounded-xl !py-3 !font-semibold"
-                      >
-                        {loading ? (
-                          <CircularProgress size={20} color="inherit" />
-                        ) : isSignUp ? (
-                          "Create Account"
-                        ) : (
-                          "Sign In"
-                        )}
-                      </Button>
-                    </Stack>
-                  </form>
-
-                  {/* Divider */}
-                  <Divider>
-                    <span className="text-xs text-gray-400">OR</span>
-                  </Divider>
-
-                  {/* Google */}
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<GoogleIcon />}
-                    onClick={handleGoogle}
-                    disabled={loading}
-                    className="!rounded-xl !py-3 !font-semibold"
-                  >
-                    Continue with Google
-                  </Button>
-
-                  {/* Toggle */}
-                  <div className="text-center text-sm text-slate-600">
+            <CardContent className="!p-6 sm:!p-8">
+              <Stack spacing={3}>
+                {/* Title */}
+                <div>
+                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                    {isSignUp ? "Create Account" : "Welcome back"}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
                     {isSignUp
-                      ? "Already have an account?"
-                      : "Don't have an account?"}
-                    <button
-                      disabled={loading}
-                      className="ml-1 font-semibold text-blue-600"
-                      onClick={() => {
-                        setIsSignUp((p) => !p);
-                        resetMessages();
-                      }}
-                    >
-                      {isSignUp ? "Sign In" : "Sign Up"}
-                    </button>
-                  </div>
-                </Stack>
-              </CardContent>
-            </Card>
+                      ? "Create your account to continue"
+                      : "Sign in to access your dashboard"}
+                  </Typography>
+                </div>
 
-            <p className="text-center text-xs text-white/55">
-              © 2026 CarePulse
-            </p>
-          </div>
+                {/* Alerts */}
+                {localError && (
+                  <Alert severity="error" onClose={() => setLocalError("")}>
+                    {localError}
+                  </Alert>
+                )}
+                {successMessage && (
+                  <Alert
+                    severity="success"
+                    onClose={() => setSuccessMessage("")}
+                  >
+                    {successMessage}
+                  </Alert>
+                )}
+
+                {/* Form */}
+                <form onSubmit={handleSubmit}>
+                  <Stack spacing={2}>
+                    <TextField
+                      fullWidth
+                      label="Email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={loading}
+                      slotProps={{
+                        inputLabel: { shrink: true },
+                      }}
+                    />
+
+                    <TextField
+                      fullWidth
+                      label="Password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={loading}
+                      autoComplete={
+                        isSignUp ? "new-password" : "current-password"
+                      }
+                      slotProps={{
+                        input: {
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                type="button"
+                                onClick={() => setShowPassword((p) => !p)}
+                                edge="end"
+                                aria-label={
+                                  showPassword
+                                    ? "Hide password"
+                                    : "Show password"
+                                }
+                              >
+                                {showPassword ? (
+                                  <VisibilityOff />
+                                ) : (
+                                  <Visibility />
+                                )}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        },
+                      }}
+                    />
+
+                    <Button
+                      type="submit"
+                      fullWidth
+                      variant="contained"
+                      disabled={loading}
+                      className="!rounded-xl !py-3 !font-semibold"
+                    >
+                      {loading ? (
+                        <CircularProgress size={20} color="inherit" />
+                      ) : isSignUp ? (
+                        "Create Account"
+                      ) : (
+                        "Sign In"
+                      )}
+                    </Button>
+                  </Stack>
+                </form>
+
+                {/* Divider */}
+                <Divider>
+                  <span className="text-xs text-gray-400 uppercase tracking-wide">
+                    or
+                  </span>
+                </Divider>
+
+                {/* Google */}
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<GoogleIcon />}
+                  onClick={handleGoogle}
+                  disabled={loading}
+                  className="!rounded-xl !py-3 !font-semibold"
+                >
+                  Continue with Google
+                </Button>
+
+                {/* Toggle */}
+                <div className="text-center text-sm text-slate-600">
+                  {isSignUp
+                    ? "Already have an account?"
+                    : "Don't have an account?"}
+                  <button
+                    disabled={loading}
+                    className="ml-1 font-semibold text-blue-600 hover:underline"
+                    onClick={() => {
+                      setIsSignUp((p) => !p);
+                      resetMessages();
+                    }}
+                  >
+                    {isSignUp ? "Sign In" : "Sign Up"}
+                  </button>
+                </div>
+              </Stack>
+            </CardContent>
+          </Card>
+
+          <Typography
+            variant="caption"
+            className="mt-4 text-center text-white/55"
+          >
+            © 2026 CarePulse
+          </Typography>
         </div>
       </div>
     </div>
