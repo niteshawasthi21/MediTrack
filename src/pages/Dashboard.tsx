@@ -20,6 +20,7 @@ import { useAuth } from "../hooks/useAuth";
 import MainLayout from "../components/layout/MainLayout";
 import { usePatients } from "../hooks/usePatients";
 import { mockAnalytics } from "../services/mockData";
+import type { Patient } from "../types/patient";
 import {
   Alert,
   Avatar,
@@ -35,7 +36,6 @@ import {
   requestNotificationPermission,
   sendNotification,
 } from "../services/notification";
-import type { Patient } from "../types/patient";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -338,7 +338,7 @@ export default function Dashboard() {
                       No critical patients right now.
                     </div>
                   ) : (
-                    critical.slice(0, 5).map((p: any) => (
+                    critical.slice(0, 5).map((p: Patient) => (
                       <div
                         key={p.id}
                         onClick={() => navigate("/patients")}
@@ -403,7 +403,7 @@ export default function Dashboard() {
                   </thead>
 
                   <tbody>
-                    {recent.map((p: any) => (
+                    {recent.map((p: Patient) => (
                       <tr
                         key={p.id}
                         onClick={() => navigate("/patients")}

@@ -241,7 +241,7 @@ export default function Patients() {
                 </thead>
 
                 <tbody>
-                  {filtered.map((p: any) => (
+                  {filtered.map((p: Patient) => (
                     <tr
                       key={p.id}
                       className="border-b border-slate-100 transition hover:bg-slate-50"
