@@ -20,6 +20,7 @@ import {
 
 import { usePatients } from "../hooks/usePatients";
 import MainLayout from "../components/layout/MainLayout";
+import type { Patient } from "../types/patient";
 
 export default function Patients() {
   const { patients } = usePatients();
@@ -28,7 +29,7 @@ export default function Patients() {
   const [search, setSearch] = useState("");
 
   const filtered = useMemo(() => {
-    return patients.filter((p) =>
+    return patients.filter((p: Patient) =>
       p.name.toLowerCase().includes(search.toLowerCase())
     );
   }, [patients, search]);
@@ -240,7 +241,7 @@ export default function Patients() {
                 </thead>
 
                 <tbody>
-                  {filtered.map((p) => (
+                  {filtered.map((p: any) => (
                     <tr
                       key={p.id}
                       className="border-b border-slate-100 transition hover:bg-slate-50"

@@ -35,6 +35,7 @@ import {
   requestNotificationPermission,
   sendNotification,
 } from "../services/notification";
+import type { Patient } from "../types/patient";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -43,7 +44,7 @@ export default function Dashboard() {
 
   const { kpis, monthlyPatients } = mockAnalytics;
 
-  const critical = patients.filter((p) => p.status === "Critical");
+  const critical = patients.filter((p: Patient) => p.status === "Critical");
   const recent = patients.slice(0, 5);
 
   const [open, setOpen] = useState(false);
@@ -337,7 +338,7 @@ export default function Dashboard() {
                       No critical patients right now.
                     </div>
                   ) : (
-                    critical.slice(0, 5).map((p) => (
+                    critical.slice(0, 5).map((p: any) => (
                       <div
                         key={p.id}
                         onClick={() => navigate("/patients")}
@@ -402,7 +403,7 @@ export default function Dashboard() {
                   </thead>
 
                   <tbody>
-                    {recent.map((p) => (
+                    {recent.map((p: any) => (
                       <tr
                         key={p.id}
                         onClick={() => navigate("/patients")}
