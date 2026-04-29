@@ -16,38 +16,20 @@ import {
 import { Visibility, VisibilityOff, LocalHospital } from "@mui/icons-material";
 import GoogleIcon from "@mui/icons-material/Google";
 import { useAuth } from "../hooks/useAuth";
-
-function getAuthMessage(err: unknown) {
-  const code =
-    typeof err === "object" && err && "code" in err
-      ? String((err as { code?: string }).code)
-      : "";
-
-  switch (code) {
-    case "auth/email-already-in-use":
-      return "This email is already registered. Please sign in instead.";
-    case "auth/invalid-email":
-      return "Please enter a valid email address.";
-    case "auth/user-not-found":
-      return "No account found with this email.";
-    case "auth/wrong-password":
-    case "auth/invalid-credential":
-      return "Incorrect email or password.";
-    case "auth/weak-password":
-      return "Password should be at least 6 characters.";
-    case "auth/popup-closed-by-user":
-      return "Google sign-in was cancelled.";
-    case "auth/account-exists-with-different-credential":
-      return "Account exists with a different provider.";
-    case "auth/too-many-requests":
-      return "Too many attempts. Try again later.";
-    default:
-      return "Something went wrong. Please try again.";
-  }
-}
+import { getAuthMessage } from "../utils/getAuthMessage";
+import ForgotPasswordDialog from "./ForgotPasswordDialog";
+import AppLoader from "../components/ui/Loader";
 
 export default function Login() {
-  const { user, login, signup, loginWithGoogle, error, loading } = useAuth();
+  const {
+    user,
+    login,
+    signup,
+    loginWithGoogle,
+    resetPassword,
+    error,
+    loading,
+  } = useAuth();
   const navigate = useNavigate();
 
   const [isSignUp, setIsSignUp] = useState(false);
@@ -57,19 +39,20 @@ export default function Login() {
   const [localError, setLocalError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // ✅ Redirect if already logged in
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
+  const [resetError, setResetError] = useState("");
+
   useEffect(() => {
     if (user) {
       navigate("/dashboard", { replace: true });
     }
   }, [user, navigate]);
 
-  // ✅ Sync global error
-  useEffect(() => {
-    if (error) {
-      setLocalError(getAuthMessage(error));
-    }
-  }, [error]);
+  const authErrorMessage = error ? getAuthMessage(error) : "";
+  const displayError = localError || authErrorMessage;
 
   const validate = () => {
     if (!email.trim()) {
@@ -110,14 +93,8 @@ export default function Login() {
       if (isSignUp) {
         await signup(email, password);
         setSuccessMessage("Account created successfully");
-
-        // small delay so user can see message
-        setTimeout(() => {
-          navigate("/dashboard", { replace: true });
-        }, 800);
       } else {
         await login(email, password);
-        // ❌ navigate handled by useEffect
       }
     } catch (err) {
       setLocalError(getAuthMessage(err));
@@ -129,13 +106,43 @@ export default function Login() {
 
     try {
       await loginWithGoogle();
-      // ❌ no navigate here
     } catch (err) {
       setLocalError(getAuthMessage(err));
     }
   };
 
-  // ✅ Prevent flicker
+  const handleForgotPasswordOpen = () => {
+    setResetEmail(email);
+    setResetError("");
+    setResetMessage("");
+    setForgotOpen(true);
+  };
+
+  const handleForgotPassword = async () => {
+    setResetError("");
+    setResetMessage("");
+
+    if (!resetEmail.trim()) {
+      setResetError("Email is required.");
+      return;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(resetEmail)) {
+      setResetError("Please enter a valid email.");
+      return;
+    }
+
+    try {
+      setResetLoading(true);
+      await resetPassword(resetEmail);
+      setResetMessage("Password reset email sent. Please check your inbox.");
+    } catch (err) {
+      setResetError(getAuthMessage(err));
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   if (loading && !user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -145,24 +152,20 @@ export default function Login() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-950 via-blue-800 to-cyan-500 px-4 sm:px-6">
-      {/* Background blobs */}
-      <div className="absolute -right-40 -top-40 h-96 w-96 rounded-full bg-white/5 blur-3xl" />
-      <div className="absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-white/5 blur-2xl" />
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-950 via-blue-800 to-cyan-500 px-4 py-6 sm:px-6">
+      <div className="absolute -right-40 -top-32 h-96 w-96 rounded-full bg-white/5 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-white/5 blur-2xl pointer-events-none" />
 
       <div className="relative z-10 flex min-h-screen items-center justify-center">
-        <div className="w-full max-w-md rounded-3xl">
-          {/* Card */}
-          <Card className="!rounded-3xl !shadow-2xl !border-0 overflow-hidden">
-            {/* Brand header inside card */}
-            <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-600 text-white py-6 px-8 flex items-center gap-3">
-              <div className="-ml-1 flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 shadow-md">
-                <LocalHospital className="!text-2xl text-white" />
+        <div className="w-full max-w-md">
+          <Card className="!rounded-2xl !shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-600 text-white py-5 px-6 flex items-center gap-3">
+              <div className="-ml-1 flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 shadow-md">
+                <LocalHospital className="!text-xl text-white" />
               </div>
-
               <div>
                 <Typography
-                  variant="h5"
+                  variant="h6"
                   className="!font-bold"
                   sx={{ color: "white" }}
                 >
@@ -174,11 +177,10 @@ export default function Login() {
               </div>
             </div>
 
-            <CardContent className="!p-6 sm:!p-8">
-              <Stack spacing={3}>
-                {/* Title */}
+            <CardContent className="!p-5 sm:!p-6">
+              <Stack spacing={2.5}>
                 <div>
-                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
                     {isSignUp ? "Create Account" : "Welcome back"}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -188,22 +190,26 @@ export default function Login() {
                   </Typography>
                 </div>
 
-                {/* Alerts */}
-                {localError && (
-                  <Alert severity="error" onClose={() => setLocalError("")}>
-                    {localError}
+                {displayError && (
+                  <Alert
+                    severity="error"
+                    onClose={() => setLocalError("")}
+                    sx={{ fontSize: "0.8125rem" }}
+                  >
+                    {displayError}
                   </Alert>
                 )}
+
                 {successMessage && (
                   <Alert
                     severity="success"
                     onClose={() => setSuccessMessage("")}
+                    sx={{ fontSize: "0.8125rem" }}
                   >
                     {successMessage}
                   </Alert>
                 )}
 
-                {/* Form */}
                 <form onSubmit={handleSubmit}>
                   <Stack spacing={2}>
                     <TextField
@@ -214,8 +220,10 @@ export default function Login() {
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={loading}
                       slotProps={{
+                        htmlInput: { autoComplete: "username" },
                         inputLabel: { shrink: true },
                       }}
+                      size="small"
                     />
 
                     <TextField
@@ -228,6 +236,7 @@ export default function Login() {
                       autoComplete={
                         isSignUp ? "new-password" : "current-password"
                       }
+                      size="small"
                       slotProps={{
                         input: {
                           endAdornment: (
@@ -241,11 +250,12 @@ export default function Login() {
                                     ? "Hide password"
                                     : "Show password"
                                 }
+                                size="small"
                               >
                                 {showPassword ? (
-                                  <VisibilityOff />
+                                  <VisibilityOff fontSize="small" />
                                 ) : (
-                                  <Visibility />
+                                  <Visibility fontSize="small" />
                                 )}
                               </IconButton>
                             </InputAdornment>
@@ -254,15 +264,28 @@ export default function Login() {
                       }}
                     />
 
+                    {!isSignUp && (
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={handleForgotPasswordOpen}
+                          className="text-xs font-medium text-blue-500 hover:cursor-pointer hover:underline"
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+                    )}
+
                     <Button
                       type="submit"
                       fullWidth
                       variant="contained"
                       disabled={loading}
-                      className="!rounded-xl !py-3 !font-semibold"
+                      size="small"
+                      className="!py-2 !font-medium"
                     >
                       {loading ? (
-                        <CircularProgress size={20} color="inherit" />
+                        <CircularProgress size={18} color="inherit" />
                       ) : isSignUp ? (
                         "Create Account"
                       ) : (
@@ -272,33 +295,32 @@ export default function Login() {
                   </Stack>
                 </form>
 
-                {/* Divider */}
                 <Divider>
                   <span className="text-xs text-gray-400 uppercase tracking-wide">
                     or
                   </span>
                 </Divider>
 
-                {/* Google */}
                 <Button
                   fullWidth
                   variant="outlined"
                   startIcon={<GoogleIcon />}
                   onClick={handleGoogle}
                   disabled={loading}
-                  className="!rounded-xl !py-3 !font-semibold"
+                  size="small"
+                  className="!py-2 !font-medium"
                 >
                   Continue with Google
                 </Button>
 
-                {/* Toggle */}
-                <div className="text-center text-sm text-slate-600">
+                <div className="text-center text-xs text-slate-600">
                   {isSignUp
                     ? "Already have an account?"
                     : "Don't have an account?"}
                   <button
+                    type="button"
                     disabled={loading}
-                    className="ml-1 font-semibold text-blue-600 hover:underline"
+                    className="ml-1 font-semibold text-blue-500 hover:underline"
                     onClick={() => {
                       setIsSignUp((p) => !p);
                       resetMessages();
@@ -313,12 +335,28 @@ export default function Login() {
 
           <Typography
             variant="caption"
-            className="mt-4 text-center text-white/55"
+            className="mt-3 text-center text-white/55 block"
           >
             © 2026 CarePulse
           </Typography>
         </div>
       </div>
+
+      <ForgotPasswordDialog
+        open={forgotOpen}
+        email={resetEmail}
+        loading={resetLoading}
+        error={resetError}
+        message={resetMessage}
+        onClose={() => !resetLoading && setForgotOpen(false)}
+        onEmailChange={setResetEmail}
+        onSubmit={handleForgotPassword}
+      />
+
+      <AppLoader
+        open={loading && !user}
+        message={isSignUp ? "Creating your account..." : "Signing you in..."}
+      />
     </div>
   );
 }

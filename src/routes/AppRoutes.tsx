@@ -9,10 +9,11 @@ const Analytics = lazy(() => import("../pages/Analytics"));
 import ProtectedRoute from "./ProtectedRoute";
 import NotFound from "../pages/NotFound";
 import LandingPage from "../pages/LandingPage";
+import AppLoader from "../components/ui/Loader";
  
 
 const LoadingFallback = () => (
-  <div className="flex items-center justify-center h-screen">Loading...</div>
+  <AppLoader open={true} message="Loading..." />
 );
 
 export default function AppRoutes() {
