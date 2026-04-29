@@ -51,11 +51,8 @@ export default function Login() {
     }
   }, [user, navigate]);
 
-  useEffect(() => {
-    if (error) {
-      setLocalError(getAuthMessage(error));
-    }
-  }, [error]);
+  const authErrorMessage = error ? getAuthMessage(error) : "";
+  const displayError = localError || authErrorMessage;
 
   const validate = () => {
     if (!email.trim()) {
@@ -96,7 +93,6 @@ export default function Login() {
       if (isSignUp) {
         await signup(email, password);
         setSuccessMessage("Account created successfully");
-        // One redirect via useEffect, no setTimeout needed
       } else {
         await login(email, password);
       }
@@ -194,13 +190,13 @@ export default function Login() {
                   </Typography>
                 </div>
 
-                {localError && (
+                {displayError && (
                   <Alert
                     severity="error"
                     onClose={() => setLocalError("")}
                     sx={{ fontSize: "0.8125rem" }}
                   >
-                    {localError}
+                    {displayError}
                   </Alert>
                 )}
 

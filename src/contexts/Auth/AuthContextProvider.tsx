@@ -1,10 +1,8 @@
 import {
-  createContext,
   useState,
   useEffect,
   type ReactNode,
 } from "react";
-
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -16,20 +14,19 @@ import {
   type User,
 } from "firebase/auth";
 
-import { auth } from "../services/firebase";
-import type { AuthContextType } from "../types/AuthContextType";
+import { auth } from "../../services/firebase";
+import { AuthContext } from "./CreateContext";
 
-export const AuthContext = createContext<AuthContextType>(
-  {} as AuthContextType
-);
+type AuthProviderProps = {
+  children: ReactNode;
+};
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const provider = new GoogleAuthProvider();
-
   useEffect(() => {
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
@@ -47,6 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const loginWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
     await signInWithPopup(auth, provider);
   };
 
