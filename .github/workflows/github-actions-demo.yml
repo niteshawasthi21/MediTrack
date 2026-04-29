@@ -1,18 +1,70 @@
-name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: [push]
+# ------------------------------------------------------------
+# MediTrack CI Workflow
+# Runs for:
+# 1. Pushes to master
+# 2. Pushes to any feature branch like feature/login
+# 3. Pull requests created/updated for master
+# 4. Manual run from GitHub Actions tab
+# ------------------------------------------------------------
+
+name: MediTrack CI
+
+on:
+  # Run when code is pushed directly to master
+  # or to any branch that starts with feature/
+  push:
+    branches:
+      - master
+      - feature/**
+
+  # Run when a pull request targets the master branch
+  # Example: feature/login -> master
+  pull_request:
+    branches: [master]
+
+  # Lets you trigger the workflow manually from GitHub UI
+  workflow_dispatch:
+
 jobs:
-  Explore-GitHub-Actions:
+  check-and-build:
+    # Name visible in GitHub Actions page
+    name: Lint and Build
+
+    # Use GitHub-hosted Ubuntu machine
     runs-on: ubuntu-latest
+
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Check out repository code
-        uses: actions/checkout@v6
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+      # Step 1: Download repository code into the runner
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Install Node.js version 20
+      # cache: npm makes dependency installation faster in future runs
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Step 3: Install packages from package-lock.json
+      # npm ci is best for CI environments
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Run ESLint using your package.json script
+      - name: Run lint
+        run: npm run lint
+
+      # Step 5: Build the project
+      # Your build script runs TypeScript build + Vite build
+      - name: Build app
+        run: npm run build
+
+      # Step 6: Save the generated dist folder as an artifact
+      # You can download it later from the GitHub Actions run page
+      - name: Upload dist folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: meditrack-dist
+          path: dist
+          if-no-files-found: error
